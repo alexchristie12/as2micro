@@ -1,3 +1,3 @@
-# Project TODO's
+# TODO
 
-This is where we can track what needs to be done to finish off this project.
+This is the main TODO document for this project
