@@ -21,48 +21,6 @@ static led_data global_led_data = {
     .blues  = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 };
 
-#define TEMP_AND_HUMIDITY_SLAVE_ADDRESS 0x80
-
-float read_temp_and_humidity() {
-    uint16_t data;
-    uint16_t temp_register = 0x00;
-    uint16_t humidity_register = 0x01;
-    uint16_t temperature_data;
-    uint16_t humidity_data;
-
-    temperature_data = i2c_read_multiple_registers(temp_register, data, 1, TEMP_AND_HUMIDITY_SLAVE_ADDRESS);
-    humidity_data = i2c_read_multiple_registers(humidity_register, data, 1, TEMP_AND_HUMIDITY_SLAVE_ADDRESS);
-
-    float temperature = (165 * (temperature_data / (2^16 - 1)) - 40);
-    float humidity = (100 * (humidity_data / (2^16 - 1)));
-
-    float temp_and_humidity[2];
-    temp_and_humidity[0] = temperature;
-    temp_and_humidity[1] = humidity;
-    return temp_and_humidity[];
-}
-
-float read_soil_moisture() {
-    adc_init();
-    adc_gpio_init(ADC0_PIN);
-    adc_select_input(0);
-
-    float soil_moisture_percentage;
-
-    float soil_moisture;
-    int soil_moisture_max = 1000;
-    int soil_moisture_min = 500;
-
-    float gradient = (100 - 0) / (soil_moisture_max - soil_moisture_min)
-
-    soil_moisture = adc_read();
-
-    soil_moisture_percentage = (gradient * soil_moisture + soil_moisture_min);
-
-    return soil_moisture_percentage;
-}
-
-
 int main() {
     io_init();
     // Do nothing for now
