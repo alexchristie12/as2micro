@@ -21,7 +21,10 @@ int i2c_write_register(uint8_t reg, uint8_t data, uint8_t device_addr) {
 
 int i2c_read_multiple_registers(uint8_t reg, uint8_t *data, int length, uint8_t device_addr) {
     // Tell the device that we are reading multiple registers
-    reg |= 0x80; // Set MSB to 1
+    if (length > 1)
+    {
+        reg |= 0x80; // Set MSB to 1
+    }
     if (1 != i2c_write_blocking(I2C_INSTANCE, device_addr, &reg, 1, true)) {
         return 1;
     }
