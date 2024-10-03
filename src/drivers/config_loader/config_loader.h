@@ -1,17 +1,40 @@
 /*
 CONFIG FEATURE IMPLEMENTATION
 
-This is not to be confused with the config.h file where the project
+
 is configured, this is the config loading feature in and out of
 flash memory
 */
 
 #include <stdint.h>
 
+#define GENERAL_HARDWARE_ID_OFFSET 0x00
+#define GENERAL_NAME_OFFSET 0x04
+#define GENERAL_CONFIG_DOB_OFFSET 0x18
+
+#define I2C_NAME_CONFIG 0x00
+#define I2C_TYPE_OFFSET 0x14
+
+#define ADC_NAME_OFFSET 0x00
+#define ADC_MIN_VAL_OFFSET 0x14
+#define ADC_MAX_VAL_OFFSET 0x18
+#define ADC_MIN_MAP_OFFSET 0x1C
+#define ADC_MAX_MAP_OFFSET 0x1E
+
+#define GENERAL_HARDWARE_OFFSET 0x00
+#define I2C_1_CONFIG 0x1C
+#define I2C_2_CONFIG 0x31
+#define ADC_1_CONFIG 0x46
+#define ADC_2_CONFIG 0x66
+#define ADC_3_CONFIG 0x86
+#define ADC_4_CONFIG 0xA6
+
+
 typedef enum {
-    TEMPERATURE,
-    HUMIDITY,
-    SOIL_MOISTURE,
+    TEMPERATURE_SENSOR,
+    HUMIDITY_SENSOR,
+    SOIL_MOISTURE_SENSOR,
+    INVALID_SENSOR,
 } sensor_type;
 
 typedef struct {
@@ -70,3 +93,42 @@ static inline void load_registers_from_float(float number, uint8_t* addr);
 /// @param registers The base address of the registers, length of 4
 /// @return The float stored in these registers
 static inline float load_float_from_registers(uint8_t* registers);
+
+/// @brief Load the general config from the config memory block
+/// @param registers The base address of the general config, length 28
+/// @return The general config struct
+static void load_general_config(uint8_t* registers, general_config* config);
+
+
+/// @brief Load a single I2C config from the memory block
+/// @param registers The base address of the I2C config
+/// @param config A pointer to the individual I2C config 
+/// @return MIGHT CHANGE THIS
+static void load_i2c_config(uint8_t* registers, i2c_config* config);
+
+
+/// @brief Load the I2C configs from the config memory block
+/// @param registers The base address to load the config from
+/// @param configs A pointer to both of the I2C configs
+static void load_i2c_configs(uint8_t* registers, i2c_config* configs);
+
+/// @brief Load a single ADC config from the memory block 
+/// @param registers The base address to load the config from
+/// @param config The config to place the register into
+static void load_adc_config(uint8_t* registers, adc_config* config);
+
+/// @brief Load all 4 of the ADC configs from the memory block
+/// @param registers The base address to load the config from 
+/// @param configs The 4 ADC configs
+static void load_adc_configs(uint8_t* registers, adc_config* configs);
+
+/// @brief Load the entire config from the memory block
+/// @param registers The base address of the entire config
+/// @param config A pointer to the RMU config
+void load_config_from_memory(uint8_t* registers, rmu_config* config);
+
+
+/// @brief Matches an integer to a sensor type
+/// @param num The number
+/// @return The sensor type
+static inline sensor_type match_sensor_type(uint8_t num);
