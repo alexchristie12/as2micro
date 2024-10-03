@@ -42,14 +42,14 @@ typedef struct {
 /// @brief Load a 16 bit unsigned integer from the config registers 
 /// @param registers The registers, must be length 2
 /// @return Return the loaded 16 bit unsigned integer
-uint16_t load_16_bit_from_registers(uint8_t *registers);
+static uint16_t load_16_bit_from_registers(uint8_t *registers);
 
 /// @brief Load a 32 bit unsigned integer from the config registers 
 /// @param registers The registers, must be a length 4
 /// @return Return the loaded 32 bit unsigned integer
-uint32_t load_32_bit_from_registers(uint8_t *registers);
+static uint32_t load_32_bit_from_registers(uint8_t *registers);
 
 
-uint8_t* load_registers_from_32_bit(uint16_t number);
+static inline void load_registers_from_32_bit(uint16_t number, uint8_t* addr);
 
-uint8_t* load_registers_from_16_bit(uint32_t number);
+static inline void load_registers_from_16_bit(uint16_t number, uint8_t* addr);
