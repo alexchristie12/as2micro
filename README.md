@@ -107,3 +107,18 @@ approaching things works the best, ChatGPT is not good at this...
 Also think about where you are putting things and ensure that you are putting
 code in the right file. Ensure that you are not doing too much in a single
 function, break stuff down, within reason of course.
+
+## Where to put stuff
+
+In the header files, we put required `#include` statements, and the `#define`
+statements in that order. Asides from that the only other things that we should
+place the struct and enum definitions, and the function prototypes.
+
+In the C source files, we put all the function implementations, and any global
+variables. If we don't want to export our functions or variables, put the 
+`static` keyword infront.
+
+## Documentation
+
+The Doxygen comments should go in the header files, above the function
+prototypes, refer to `src/drivers/config_load/config_loader.h` for reference.
