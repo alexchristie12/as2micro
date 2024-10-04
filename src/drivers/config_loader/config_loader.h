@@ -5,7 +5,7 @@ CONFIG FEATURE IMPLEMENTATION
 is configured, this is the config loading feature in and out of
 flash memory
 */
-
+#pragma once
 #include <stdint.h>
 
 #define GENERAL_HARDWARE_ID_OFFSET 0x00
@@ -161,7 +161,7 @@ static void load_adc_configs_to_registers(uint8_t* registers, adc_config* config
 /// @brief Load the entire config into the config memory buffer 
 /// @param registers The base address of the config
 /// @param config A pointer to the pointer struct
-static void load_config_to_registers(uint8_t* registers, rmu_config* config);
+void load_config_to_registers(uint8_t* registers, rmu_config* config);
 
 /// @brief Match the sensor type enum to its corresponding integer in the config buffer
 /// @param st The sensor type
