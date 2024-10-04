@@ -1,8 +1,9 @@
-#include <stdio.h>
-#include "pico/stdlib.h"
-#include "config.h"
+#include <stdint.h>
+#include "hardware/adc.h"
 
 uint8_t adc_pin = 26;
+float adc_raw_input = 0;
+float adc_mapped_output = 0;
 
 float read_adc_sensor(uint8_t adc_connection, int adc_min, int adc_max, int adc_map_min, int adc_map_max) {
     adc_init();
@@ -25,10 +26,6 @@ float read_adc_sensor(uint8_t adc_connection, int adc_min, int adc_max, int adc_
     }
     adc_gpio_init(adc_pin);
     adc_select_input(adc_connection);
-
-    float adc_mapped_output;
-
-    float adc_raw_input;
 
     float gradient = (adc_map_max - adc_map_min) / (adc_max - adc_min);
 

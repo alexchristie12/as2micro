@@ -13,13 +13,13 @@ void i2c_full_init() {
     gpio_pull_down(SCL_PIN);
 }
 
-int i2c_write_register(uint8_t reg, uint8_t data, uint8_t device_addr) {
+int i2c_write_register(uint8_t reg, uint16_t data, uint8_t device_addr) {
     uint8_t buf[2]        = {reg, data};
     int     bytes_written = i2c_write_blocking(I2C_INSTANCE, device_addr, buf, 2, false);
     return (bytes_written == 2) ? 0 : 1;
 }
 
-int i2c_read_multiple_registers(uint8_t reg, uint8_t *data, int length, uint8_t device_addr) {
+int i2c_read_multiple_registers(uint8_t reg, uint16_t *data, int length, uint8_t device_addr) {
     // Tell the device that we are reading multiple registers
     if (length > 1)
     {
