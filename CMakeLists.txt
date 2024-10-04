@@ -67,6 +67,7 @@ if(CrossCompiling)
         hardware_watchdog
         hardware_clocks
         hardware_pwm
+        hardware_flash
     )
 
     pico_add_extra_outputs(rmu)
