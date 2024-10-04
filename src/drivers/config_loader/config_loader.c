@@ -170,7 +170,7 @@ static void load_adc_configs_to_registers(uint8_t* registers, adc_config* config
     load_adc_config_to_registers(registers + ADC_4_CONFIG, &(configs[3]));
 }
 
-static void load_config_to_registers(uint8_t* registers, rmu_config* config) {
+void load_config_to_registers(uint8_t* registers, rmu_config* config) {
     // Remember that I only give it all the base addresses
     // Remember that this will be put in in the right spot
     load_general_config_to_registers(registers, &(config->general_config));
