@@ -17,7 +17,7 @@ The following are the base addresses of each of the sensor configs.
 | ADC 1   | `0x10000046` |
 | ADC 2   | `0x10000066` |
 | ADC 3   | `0x10000086` |
-| ADC 4   | `0x700000A6` |
+| ADC 4   | `0x100000A6` |
 
 ## Sensor Offsets
 
