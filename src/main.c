@@ -2,6 +2,7 @@
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/pio.h"
+// #include "hardware/adc.h"
 
 // #include "config.h"
 // #include "WS2812.pio.h" // This header file gets produced during compilation from the WS2812.pio file
@@ -12,6 +13,7 @@
 // #include "drivers/io/io.h"
 
 #include "drivers/i2c/i2c.h"
+#include "drivers/adc/adc.h"
 
 // #include "tasks/tasks.h"
 
@@ -20,6 +22,8 @@
 //     .greens = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 //     .blues  = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 // };
+
+float soil_moisture = 0;
 
 int main() {
     // io_init();
@@ -37,16 +41,16 @@ int main() {
     stdio_init_all();
     stdio_uart_init_full(uart0, 115200, 16, 17);
     i2c_full_init();
+    temp_and_humidity_init();
+    adc_init();
+    adc_gpio_init(29);
+    adc_select_input(3);
 
     for (;;) {
         read_temp_and_humidity();
+        soil_moisture = read_adc_sensor(0, 545, 0, 1000);
+        printf("moisture: %f\r\n", soil_moisture);
         sleep_ms(1000);
-        // if (get_current_task() == TASK_IDLE) {
-        //     switch_off_leds(&global_led_data);
-        //     update_leds(&global_led_data);
-        //     sleep_ms(1);
-        //     continue;
-        // }
     }
     return 0;
 }
