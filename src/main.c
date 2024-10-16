@@ -10,7 +10,7 @@
 // #include "drivers/WS2812/led.h"
 
 #include "sensors/CHT8305C/temp_and_humidity.h"
-// #include "drivers/io/io.h"
+#include "drivers/io/io.h"
 
 #include "drivers/i2c/i2c.h"
 #include "drivers/adc/adc.h"
@@ -23,7 +23,7 @@
 //     .blues  = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 // };
 
-float soil_moisture = 0;
+float soil_moisture[] = 0;
 
 int main() {
     // io_init();
@@ -44,9 +44,24 @@ int main() {
     temp_and_humidity_init();
     adc_sensor_init(3);
 
+    void sending_sensor_data(){
+        //snprint
+        char poll_command[50]; 
+        int zone_id = 1;      
+        snprintf(poll_command, sizeof(poll_command), "poll=%d\n", zone_id);
+        char input_buffer[200];
+        io_poll(input_buffer, 200);
+        if(strcmp(input_buffer, poll_command) == 0){
+            // read the sensors
+            read_temp_and_humidity();
+            soil_moisture.append = read_adc_sensor(0, 545, 0, 1000);
+           // sensor_data(zone_number) 
+        }
+    }
+    
     for (;;) {
         read_temp_and_humidity();
-        soil_moisture = read_adc_sensor(0, 545, 0, 1000);
+        soil_moisture[0] = read_adc_sensor(0, 545, 0, 1000);
         printf("moisture: %f\r\n", soil_moisture);
         sleep_ms(1000);
     }
