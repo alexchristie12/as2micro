@@ -33,6 +33,8 @@ if(CrossCompiling)
         PUBLIC
         src/main.c
         src/drivers/logging/logging.c
+        src/drivers/config_loader/config_loader.c
+        src/drivers/flash/flash.c
         src/drivers/WS2812/led.c
         src/drivers/io/io.c
         src/drivers/i2c/i2c.c
@@ -68,6 +70,7 @@ if(CrossCompiling)
         hardware_watchdog
         hardware_clocks
         hardware_pwm
+        hardware_flash
     )
 
     pico_add_extra_outputs(rmu)
