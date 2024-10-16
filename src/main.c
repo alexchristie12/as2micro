@@ -6,8 +6,9 @@
 #include "drivers/io/io.h"
 #include "drivers/i2c/i2c.h"
 #include "drivers/adc/adc.h"
-#include "sensors/CHT8305C/temp_and_humidity.h"
 #include "drivers/config_loader/config_loader.h"
+#include "drivers/WS2812/led.h"
+#include "sensors/CHT8305C/temp_and_humidity.h"
 
 // 5 zones
 int   offset = 0;
@@ -18,6 +19,8 @@ float flow_rate[4];
 bool  water_on;        // tell the pi if the water is running (1) or not (0)
 
 char poll_command[50];
+char water_on_command[50];
+char water_off_command[50];
 int  zone_id = 1;
 char received_buffer[200];
 char output_buffer[1024];
@@ -94,25 +97,34 @@ void formats_data_output() {
     offset += snprintf(output_buffer + offset, sizeof(output_buffer) - offset, "water_on=%d", water_on);
 }
 
-void sends_sensor_data() {
+void decode_input_commands() {
     memset((char *)received_buffer, '\000', sizeof(received_buffer));
     io_poll(received_buffer, 200);
     if (strcmp(received_buffer, poll_command) == 0) {
         reads_all_sensors();
         formats_data_output();
     }
+    else if (strcmp(received_buffer, water_on_command) == 0) {
+        set_led_color(0, 0, 255);
+    }
+    else if (strcmp(received_buffer, water_off_command) == 0) {
+        turn_off_led();
+    }
+    
 }
 
 int main() {
     io_init();
     parse_i2c_configs_and_initialise();
     parse_adc_configs_and_initialise();
+    led_init();
 
     snprintf(poll_command, sizeof(poll_command), "poll=%d\n", zone_id);
+    snprintf(water_on_command, sizeof(water_on_command), "water_on=%d\n", zone_id);
+    snprintf(water_off_command, sizeof(water_off_command), "water_off=%d\n", zone_id);
 
     for (;;) {
-        sends_sensor_data();
-        uart_puts(UART_1_ID, output_buffer);
+        decode_input_commands();
     }
     return 0;
 }

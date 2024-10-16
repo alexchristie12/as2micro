@@ -16,6 +16,11 @@ Set the Debug Configuration for the build
 */
 #define DBG_LOGGING
 
+
+#define LED_PIO pio0
+#define OUTPUT_LED_PIN 18
+#define DEBUG_LED_PIN 19
+
 /*
 UART CONFIGURATION
 
