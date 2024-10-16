@@ -4,6 +4,6 @@
 
 #define TEMP_AND_HUMIDITY_SLAVE_ADDRESS 0x40
 
-void temp_and_humidity_init();
+void temp_and_humidity_init(int i2c_connection);
 
-void read_temp_and_humidity();
+float* read_temp_and_humidity(int i2c_connection);

@@ -7,6 +7,7 @@
 #include "drivers/i2c/i2c.h"
 #include "drivers/adc/adc.h"
 #include "sensors/CHT8305C/temp_and_humidity.h"
+#include "drivers/config_loader/config_loader.h"
 
 // 5 zones
 int   offset = 0;
@@ -21,6 +22,51 @@ char poll_command[50];
 int  zone_id = 1;
 char received_buffer[200];
 char output_buffer[1024];
+
+int i2c_sensor_count = 2;
+int i2c_sensor_type = 1;
+int temperature_and_humidity_sensor_counter = 0;
+
+int adc_sensor_count = 3;
+int adc_sensor_type = 1;
+int soil_moisture_sensor_counter = 0;
+int flow_rate_sensor_counter = 0;
+
+rmu_config config;
+
+void determines_and_initialises_connected_sensors(){
+}
+
+void reads_all_sensors(){
+    //Loop through i2c sensors and read them
+    for (size_t i = 0; i < i2c_sensor_count; i++)
+    {
+        if (i2c_sensor_type == 1)
+        {
+            float* temperature_and_humidity = read_temp_and_humidity(i);
+            temperature[i] = temperature_and_humidity[0];
+            humidity[i] = temperature_and_humidity[1];
+        }      
+    }
+    // loop through adc sensors and read them
+    for (size_t i = 0; i < adc_sensor_count; i++)
+    {
+        adc_select_input(i);
+        if (adc_sensor_type == 2)
+        {
+            // soil moisture
+            soil_moisture[soil_moisture_sensor_counter] = read_adc_sensor(0, 545, 0, 900);
+            soil_moisture_sensor_counter++;
+        }
+        else if (adc_sensor_type == 3)
+        {
+            flow_rate[flow_rate_sensor_counter] = read_adc_sensor(0, 450, 0, 20);
+            flow_rate_sensor_counter++;
+        }
+    }
+    soil_moisture_sensor_counter = 0;
+    flow_rate_sensor_counter++;
+}
 
 void formats_data_output() {
     // Rotate through for each zone:
@@ -51,6 +97,7 @@ void sends_sensor_data() {
     memset((char *)received_buffer, '\000', sizeof(received_buffer));
     io_poll(received_buffer, 200);
     if (strcmp(received_buffer, poll_command) == 0) {
+        reads_all_sensors();
         formats_data_output();
     }
 }
@@ -58,8 +105,8 @@ void sends_sensor_data() {
 int main() {
     io_init();
     i2c_full_init();
-    temp_and_humidity_init();
-    adc_sensor_init(3);
+    // temp_and_humidity_init();
+    // adc_sensor_init(3);
 
     snprintf(poll_command, sizeof(poll_command), "poll=%d\n", zone_id);
 

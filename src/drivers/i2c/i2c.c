@@ -13,25 +13,19 @@ void i2c_full_init() {
     gpio_pull_up(I2C_1_SCL_PIN);
 }
 
-int i2c_write_register(uint8_t reg, uint16_t data, uint8_t device_addr) {
+int i2c_write_register(i2c_inst_t *i2c_instance_to_read, uint8_t reg, uint16_t data, uint8_t device_addr) {
     uint8_t buf[3]        = {reg, (data >> 8), (data & 0xFF)};
-    int     bytes_written = i2c_write_blocking(I2C_1_INSTANCE, device_addr, buf, 3, false);
+    int     bytes_written = i2c_write_blocking(i2c_instance_to_read, device_addr, buf, 3, false);
     return (bytes_written == 3) ? 0 : 1;
 }
 
-int i2c_read_multiple_registers(uint8_t reg, uint8_t *data, int length, uint8_t device_addr) {
-    // Tell the device that we are reading multiple registers
-    // if (length > 1)
-    // {
-    //     reg |= 0x80; // Set MSB to 1
-    // }
-
-    if (1 != i2c_write_blocking(I2C_1_INSTANCE, device_addr, &reg, 1, true)) {
+int i2c_read_multiple_registers(i2c_inst_t *i2c_instance_to_read, uint8_t reg, uint8_t *data, int length, uint8_t device_addr) {
+    if (1 != i2c_write_blocking(i2c_instance_to_read, device_addr, &reg, 1, true)) {
         return 1;
     }
 
     sleep_ms(20); 
 
-    int bytes_read = i2c_read_blocking(I2C_1_INSTANCE, device_addr, data, length, false);
+    int bytes_read = i2c_read_blocking(i2c_instance_to_read, device_addr, data, length, false);
     return (bytes_read == length) ? 0 : 1;
 }
