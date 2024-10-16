@@ -31,9 +31,10 @@ flash memory
 
 
 typedef enum {
-    TEMPERATURE_SENSOR,
-    HUMIDITY_SENSOR,
+    TEMPERATURE_HUMIDITY_SENSOR,
     SOIL_MOISTURE_SENSOR,
+    FLOW_RATE_SENSOR,
+    DISABLED_SENSOR,
     INVALID_SENSOR,
 } sensor_type;
 
