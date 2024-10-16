@@ -38,7 +38,9 @@ if(CrossCompiling)
         src/drivers/WS2812/led.c
         src/drivers/io/io.c
         src/drivers/i2c/i2c.c
-        src/tasks/tasks.c
+        src/drivers/adc/adc.c
+        src/sensors/CHT8305C/temp_and_humidity.c
+        # src/tasks/tasks.c
     )
     target_include_directories(rmu
         PUBLIC 
@@ -60,6 +62,7 @@ if(CrossCompiling)
         pico_stdlib
         hardware_spi
         hardware_i2c
+        hardware_adc
         hardware_dma
         hardware_pio
         hardware_interp
