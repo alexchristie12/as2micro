@@ -16,30 +16,12 @@ int bytes_read;
 float temp_and_humidity[2];
 
 void temp_and_humidity_init(int i2c_connection) {
-    i2c_inst_t *i2c_instance_to_read = I2C_0_INSTANCE;
-    if (i2c_connection == 0)
-    {
-        i2c_inst_t *i2c_instance_to_read = I2C_0_INSTANCE;
-    }
-    else if (i2c_connection == 1)
-    {
-        i2c_inst_t *i2c_instance_to_read = I2C_1_INSTANCE;
-    }
-    bytes_read = i2c_write_register(i2c_instance_to_read, config_register, config_data, TEMP_AND_HUMIDITY_SLAVE_ADDRESS);
+    bytes_read = i2c_write_register(i2c_connection, config_register, config_data, TEMP_AND_HUMIDITY_SLAVE_ADDRESS);
 }
 
 // void read_temp_and_humidity() {
 float* read_temp_and_humidity(int i2c_connection) {
-    i2c_inst_t *i2c_instance_to_read = I2C_0_INSTANCE;
-    if (i2c_connection == 0)
-    {
-        i2c_inst_t *i2c_instance_to_read = I2C_0_INSTANCE;
-    }
-    else if (i2c_connection == 0)
-    {
-        i2c_inst_t *i2c_instance_to_read = I2C_1_INSTANCE;
-    }
-    bytes_read = i2c_read_multiple_registers(i2c_instance_to_read, temp_register, &data_out, 4, TEMP_AND_HUMIDITY_SLAVE_ADDRESS);
+    bytes_read = i2c_read_multiple_registers(i2c_connection, temp_register, &data_out, 4, TEMP_AND_HUMIDITY_SLAVE_ADDRESS);
     temperature_data = ((data_out[0] << 8) | data_out[1]);
     humidity_data = ((data_out[2] << 8) | data_out[3]);
 

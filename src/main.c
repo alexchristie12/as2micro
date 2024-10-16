@@ -16,62 +16,64 @@ float humidity[2];
 float soil_moisture[4];
 float flow_rate[4];
 bool  water_on;        // tell the pi if the water is running (1) or not (0)
-int   zone_number = 1; // alex config to do
 
 char poll_command[50];
 int  zone_id = 1;
 char received_buffer[200];
 char output_buffer[1024];
 
-int i2c_sensor_count = 2;
-int i2c_sensor_type = 1;
-int temperature_and_humidity_sensor_counter = 0;
+sensor_type i2c_sensor_type[2] = {DISABLED_SENSOR};
+sensor_type adc_sensor_type[4] = {DISABLED_SENSOR};
 
-int adc_sensor_count = 3;
-int adc_sensor_type = 1;
-int soil_moisture_sensor_counter = 0;
-int flow_rate_sensor_counter = 0;
-
-rmu_config config;
-
-void determines_and_initialises_connected_sensors(){
+/// @param configs - This is a pointer to the array of i2c configs, access it like an array
+void parse_i2c_configs_and_initialise(i2c_config *configs) {
+    for (size_t i = 0; i < 2; i++) {
+        i2c_sensor_type[i] = configs[i].type;
+        if (i2c_sensor_type[i] == TEMPERATURE_HUMIDITY_SENSOR) {
+            i2c_full_init(i);
+            temp_and_humidity_init(i);
+        }
+    }
 }
 
-void reads_all_sensors(){
-    //Loop through i2c sensors and read them
-    for (size_t i = 0; i < i2c_sensor_count; i++)
-    {
-        if (i2c_sensor_type == 1)
+void parse_adc_configs_and_initialise(adc_config *configs) {
+    adc_init();
+    for (size_t i = 0; i < 4; i++) {
+        adc_sensor_type[i] = configs[i].type;
+        if (i2c_sensor_type[i] == SOIL_MOISTURE_SENSOR) {
+            adc_sensor_init(i);
+        }
+        else if (i2c_sensor_type[i] == FLOW_RATE_SENSOR)
         {
-            float* temperature_and_humidity = read_temp_and_humidity(i);
+            adc_sensor_init(i);
+        }
+    }
+}
+
+void reads_all_sensors() {
+    // Loop through i2c sensors and read them
+    for (size_t i = 0; i < 2; i++) {
+        if (i2c_sensor_type[i] == TEMPERATURE_HUMIDITY_SENSOR) {
+            float *temperature_and_humidity = read_temp_and_humidity(i);
             temperature[i] = temperature_and_humidity[0];
             humidity[i] = temperature_and_humidity[1];
-        }      
+        }
     }
     // loop through adc sensors and read them
-    for (size_t i = 0; i < adc_sensor_count; i++)
-    {
+    for (size_t i = 0; i < 4; i++) {
         adc_select_input(i);
-        if (adc_sensor_type == 2)
-        {
-            // soil moisture
-            soil_moisture[soil_moisture_sensor_counter] = read_adc_sensor(0, 545, 0, 900);
-            soil_moisture_sensor_counter++;
-        }
-        else if (adc_sensor_type == 3)
-        {
-            flow_rate[flow_rate_sensor_counter] = read_adc_sensor(0, 450, 0, 20);
-            flow_rate_sensor_counter++;
+        if (adc_sensor_type[i] == SOIL_MOISTURE_SENSOR) {
+            soil_moisture[i] = read_adc_sensor(0, 545, 0, 900);
+        } else if (adc_sensor_type[i] == FLOW_RATE_SENSOR) {
+            flow_rate[i] = read_adc_sensor(0, 450, 0, 20);
         }
     }
-    soil_moisture_sensor_counter = 0;
-    flow_rate_sensor_counter++;
 }
 
 void formats_data_output() {
     // Rotate through for each zone:
     memset((char *)output_buffer, '\000', sizeof(output_buffer));
-    offset += snprintf(output_buffer + offset, sizeof(output_buffer) - offset, "hardware_id=%i,", zone_number);
+    offset += snprintf(output_buffer + offset, sizeof(output_buffer) - offset, "hardware_id=%i,", zone_id);
     // Temperature Data:
     for (int i = 0; i < sizeof(temperature); i++) {
         offset += snprintf(output_buffer + offset, sizeof(output_buffer) - offset, "temperature_%i=%.2f,", i, temperature[i]);
@@ -85,8 +87,7 @@ void formats_data_output() {
         offset += snprintf(output_buffer + offset, sizeof(output_buffer) - offset, "soil_moisture_%i=%.2f,", i, soil_moisture[i]);
     }
     // Flow Rate Data
-    for (int i = 0; i < sizeof(flow_rate); i++)
-    {
+    for (int i = 0; i < sizeof(flow_rate); i++) {
         offset += snprintf(output_buffer + offset, sizeof(output_buffer) - offset, "flow_rate_%i=%.2f,", i, flow_rate[i]);
     }
     // Water Valve On/Off - 0 = off, 1 = on
@@ -104,9 +105,8 @@ void sends_sensor_data() {
 
 int main() {
     io_init();
-    i2c_full_init();
-    // temp_and_humidity_init();
-    // adc_sensor_init(3);
+    parse_i2c_configs_and_initialise();
+    parse_adc_configs_and_initialise();
 
     snprintf(poll_command, sizeof(poll_command), "poll=%d\n", zone_id);
 
