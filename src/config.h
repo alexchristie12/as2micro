@@ -104,5 +104,7 @@ I2C CONFIGURATION
 */
 
 #define I2C_INSTANCE i2c0
-#define SDA_PIN 16
-#define SCL_PIN 17
+#define SDA_PIN 12
+#define SCL_PIN 13
+
+#define ADC0_PIN 26

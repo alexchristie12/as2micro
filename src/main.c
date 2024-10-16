@@ -2,12 +2,17 @@
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/pio.h"
+// #include "hardware/adc.h"
 
-#include "config.h"
-#include "WS2812.pio.h" // This header file gets produced during compilation from the WS2812.pio file
-#include "drivers/logging/logging.h"
-#include "drivers/WS2812/led.h"
-#include "drivers/io/io.h"
+// #include "config.h"
+// #include "WS2812.pio.h" // This header file gets produced during compilation from the WS2812.pio file
+// #include "drivers/logging/logging.h"
+// #include "drivers/WS2812/led.h"
+#include "drivers/i2c/i2c.h"
+#include "drivers/adc/adc.h"
+#include "sensors/CHT8305C/temp_and_humidity.h"
+// #include "drivers/io/io.h"
+
 
 // 5 zones
 int   offset          = 0;
@@ -39,6 +44,13 @@ void sensor_data(int zone_number) {
 
 int main() {
     io_init();
+    stdio_init_all();
+    stdio_uart_init_full(uart0, 115200, 16, 17);
+    i2c_full_init();
+    temp_and_humidity_init();
+    adc_init();
+    adc_gpio_init(29);
+    adc_select_input(3);
 
     for (;;) {
         sensor_data(zone_number);

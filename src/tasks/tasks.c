@@ -52,9 +52,6 @@ void log_new_task(tasks new_task) {
         case TASK_ACCEL:
             log_dbg(LOG_INFORMATION, "switched to accelerometer task");
             break;
-        case TASK_MICROPHONE:
-            log_dbg(LOG_INFORMATION, "switched to microphone task");
-            break;
         case TASK_BLUETOOTH:
             log_dbg(LOG_INFORMATION, "switched to bluetooth task");
             break;
