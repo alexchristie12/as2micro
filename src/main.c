@@ -13,7 +13,7 @@ int main() {
     io_init();
     // 5 zones
     int offset = 0;
-    float temp[] = {23, 23.2, 23.1, 23}; // 4 readings from 4 different temp sensors
+    float temperature[] = {23, 23.2, 23.1, 23}; // 4 readings from 4 different temp sensors
     float humidity[] = {76, 75.4, 75.8};
     float soil_moisture[] = {40, 40.3};
     float flow_rate = 46.3;
@@ -22,19 +22,20 @@ int main() {
 
     void sensor_data (int zone_number){
         // Rotate through for each zone:
-        offset += snprintf(buffer + offset, sizeof(buffer) - offset, "zone:%i,floaw_rate:%.2f,water_on:%d", zone_number, flow_rate, water_on);
+        offset += snprintf(buffer + offset, sizeof(buffer) - offset, "zone=%i,", zone_number);
         // Temperature Sensors:
         for (int i = 0; i < sizeof(temp); i++) {
-            offset += snprintf(buffer + offset, sizeof(buffer) - offset, "temp%i:%.2f,", i, temp[i]);
+            offset += snprintf(buffer + offset, sizeof(buffer) - offset, "temperature%i=%.2f,", i, temperature[i]);
         }
         // Humidity Sensors:
         for (int i = 0; i < sizeof(humidity); i++) {
-            offset += snprintf(buffer + offset, sizeof(buffer) - offset, "humidity%i:%.2f,", i, humidity[i]);
+            offset += snprintf(buffer + offset, sizeof(buffer) - offset, "humidity%i=%.2f,", i, humidity[i]);
         }
         // Soil Moisture Sensors:
         for (int i = 0; i < sizeof(soil_moisture); i++) {
-            offset += snprintf(buffer + offset, sizeof(buffer) - offset, "soil_moisture%i:%.2f", i, soil_moisture[i]);
+            offset += snprintf(buffer + offset, sizeof(buffer) - offset, "soil_moisture%i=%.2f,", i, soil_moisture[i]);
         }
+        offset += snprintf(buffer + offset, sizeof(buffer) - offset, "flow_rate=%.2f,water_on=%d", flow_rate, water_on);
     }
    
     for (;;) {
