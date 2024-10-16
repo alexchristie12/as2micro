@@ -42,9 +42,7 @@ int main() {
     stdio_uart_init_full(uart0, 115200, 16, 17);
     i2c_full_init();
     temp_and_humidity_init();
-    adc_init();
-    adc_gpio_init(29);
-    adc_select_input(3);
+    adc_sensor_init(3);
 
     for (;;) {
         read_temp_and_humidity();

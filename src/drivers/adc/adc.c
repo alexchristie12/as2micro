@@ -2,10 +2,10 @@
 #include "hardware/adc.h"
 
 uint8_t adc_pin = 26;
-float adc_raw_input = 0;
+uint16_t adc_raw_input = 0;
 float adc_mapped_output = 0;
 
-float read_adc_sensor(uint8_t adc_connection, int adc_min, int adc_max, int adc_map_min, int adc_map_max) {
+void adc_sensor_init(int adc_connection) {
     adc_init();
     switch (adc_connection)
     {
@@ -26,12 +26,22 @@ float read_adc_sensor(uint8_t adc_connection, int adc_min, int adc_max, int adc_
     }
     adc_gpio_init(adc_pin);
     adc_select_input(adc_connection);
+}
 
+float read_adc_sensor(int adc_min, int adc_max, int adc_map_min, int adc_map_max) {
     float gradient = (adc_map_max - adc_map_min) / (adc_max - adc_min);
 
     adc_raw_input = adc_read();
 
     adc_mapped_output = (gradient * adc_raw_input + adc_min);
 
+    if (adc_mapped_output > adc_map_max)
+    {
+        adc_mapped_output = adc_map_max;
+    }
+    else if (adc_mapped_output < adc_map_min)
+    {
+        adc_mapped_output = adc_map_min;
+    }
     return adc_mapped_output;
 }
