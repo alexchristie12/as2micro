@@ -36,9 +36,6 @@ if(CrossCompiling)
         src/drivers/WS2812/led.c
         src/drivers/io/io.c
         src/drivers/i2c/i2c.c
-        src/drivers/accel/accel.c
-        src/drivers/microphone/microphone.c
-        src/tasks/tasks.c
     )
     target_include_directories(rmu
         PUBLIC 

@@ -38,6 +38,7 @@ void on_uart_rx(void) {
 
 void io_init() {
     stdio_init_all();
+    stdio_uart_init_full(uart0, 115200, 16, 17);
     memset((char *)input_buffer, '\000', sizeof(input_buffer));
 
     // Initialise the UART
