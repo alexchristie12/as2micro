@@ -5,7 +5,6 @@
 #include "hardware/gpio.h"
 #include "hardware/pio.h"
 #include "drivers/logging/logging.h"
-#include "tasks/tasks.h"
 #include "config.h"
 #include "stdint.h"
 #include "string.h"
@@ -15,18 +14,18 @@ volatile unsigned int buffer_i    = 0;
 volatile bool         input_ready = false;
 
 void on_uart_rx(void) {
-    while (uart_is_readable(UART_ID)) {
-        if (uart_is_writable(UART_ID)) {
-            uint8_t ch = uart_getc(UART_ID);
+    while (uart_is_readable(UART_1_ID)) {
+        if (uart_is_writable(UART_1_ID)) {
+            uint8_t ch = uart_getc(UART_1_ID);
             if ((ch == '\r') || (ch == '\n')) {
                 input_buffer[buffer_i] = 0; // Adds trailing NULL
-                uart_putc(UART_ID, '\r');
-                uart_putc(UART_ID, '\n');
+                uart_putc(UART_1_ID, '\r');
+                uart_putc(UART_1_ID, '\n');
                 input_ready = true;
             } else {
                 input_buffer[buffer_i] = ch;
                 buffer_i++;
-                uart_putc(UART_ID, ch);
+                uart_putc(UART_1_ID, ch);
                 if (ch == 0x7f) {
                     buffer_i               = buffer_i - 2;
                     input_buffer[buffer_i] = '\000';
@@ -42,18 +41,18 @@ void io_init() {
     memset((char *)input_buffer, '\000', sizeof(input_buffer));
 
     // Initialise the UART
-    uart_init(UART_ID, BAUD_RATE);
-    gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
-    gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
+    uart_init(UART_1_ID, UART_1_BAUD_RATE);
+    gpio_set_function(UART_1_TX_PIN, GPIO_FUNC_UART);
+    gpio_set_function(UART_1_RX_PIN, GPIO_FUNC_UART);
 
-    uart_set_hw_flow(UART_ID, false, false);
-    uart_set_format(UART_ID, DATA_BITS, STOP_BITS, PARITY);
-    uart_set_fifo_enabled(UART_ID, false);
-    int UART_IRQ = UART_ID == uart0 ? UART0_IRQ : UART1_IRQ;
+    uart_set_hw_flow(UART_1_ID, false, false);
+    uart_set_format(UART_1_ID, UART_1_DATA_BITS, UART_1_STOP_BITS, UART_1_PARITY);
+    uart_set_fifo_enabled(UART_1_ID, false);
+    int UART_1_IRQ = UART_1_ID == uart0 ? UART0_IRQ : UART1_IRQ;
 
-    irq_set_exclusive_handler(UART_IRQ, on_uart_rx);
-    irq_set_enabled(UART_IRQ, true);
-    uart_set_irq_enables(UART_ID, true, false);
+    irq_set_exclusive_handler(UART_1_IRQ, on_uart_rx);
+    irq_set_enabled(UART_1_IRQ, true);
+    uart_set_irq_enables(UART_1_ID, true, false);
 }
 
 int io_poll(char *buffer, int buffer_len) {
