@@ -41,6 +41,7 @@ if(CrossCompiling)
         src/drivers/adc/adc.c
         src/sensors/CHT8305C/temp_and_humidity.c
         # src/tasks/tasks.c
+
     )
     target_include_directories(rmu
         PUBLIC 
