@@ -83,10 +83,11 @@ static void load_i2c_configs(uint8_t* registers, i2c_config* configs) {
 
 static void load_adc_config(uint8_t* registers, adc_config* config) {
     memcmp(config->name, registers + ADC_NAME_OFFSET, 20);
-    config->max_val     = load_float_from_registers(registers + ADC_MAX_VAL_OFFSET);
-    config->min_val     = load_float_from_registers(registers + ADC_MAX_VAL_OFFSET);
-    config->adc_min_map = load_16_bit_from_registers(registers + ADC_MIN_MAP_OFFSET);
-    config->adc_max_map = load_16_bit_from_registers(registers + ADC_MAX_MAP_OFFSET);
+    config->type = match_sensor_type(*(registers + ADC_MIN_VAL_OFFSET));
+    // config->max_val     = load_float_from_registers(registers + ADC_MAX_VAL_OFFSET);
+    // config->min_val     = load_float_from_registers(registers + ADC_MAX_VAL_OFFSET);
+    // config->adc_min_map = load_16_bit_from_registers(registers + ADC_MIN_MAP_OFFSET);
+    // config->adc_max_map = load_16_bit_from_registers(registers + ADC_MAX_MAP_OFFSET);
 }
 
 static void load_adc_configs(uint8_t* registers, adc_config* configs) {
