@@ -2,6 +2,41 @@
 #include <string.h>
 #include <stdint.h>
 
+static rmu_config default_config = {
+    .general_config = {
+        .dob_unix = 0,
+        .hardware_id = 0,
+        .name = "default_config"
+    },
+    .i2c_configs = {
+        {
+            .name = "temperature_01",
+            .type = TEMPERATURE_HUMIDITY_SENSOR,
+        },
+        {
+            .name = "temperature_02"
+        },
+    },
+    .adc_configs = {
+        {
+            .name = "soil_moisture_01",
+            .type = SOIL_MOISTURE_SENSOR,
+        },
+        {
+            .name = "soil_moisture_02",
+            .type = SOIL_MOISTURE_SENSOR,
+        },
+        {
+            .name = "soil_moisture_03",
+            .type = SOIL_MOISTURE_SENSOR,
+        },
+        {
+            .name = "flow_rate_01",
+            .type = FLOW_RATE_SENSOR,
+        },
+    },
+}
+
 static inline void load_registers_from_16_bit(uint16_t number, uint8_t* addr) {
     addr[0] = number & 0xFF;
     addr[1] = (number >> 8) & 0xFF;
