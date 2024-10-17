@@ -27,8 +27,6 @@ float* read_temp_and_humidity(int i2c_connection) {
 
     float temperature = ((float)temperature_data * 165.0 / 65535.0) - 40.0;
     float humidity = ((float)humidity_data / 65535.0) * 100.0;
-    // printf("temp: %.2f\r\n", temperature);
-    printf("temp: %.2f, humidity: %.2f\r\n", temperature, humidity);
 
     temp_and_humidity[0] = temperature;
     temp_and_humidity[1] = humidity;

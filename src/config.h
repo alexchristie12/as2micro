@@ -30,9 +30,9 @@ UART CONFIGURATION
 #define STOP_BITS               | Number of stop bits
 #define PARITY                  | UART Parity
 */
-#define UART_1_ID uart1
-#define UART_1_TX_PIN 24
-#define UART_1_RX_PIN 25
+#define UART_1_ID uart0
+#define UART_1_TX_PIN 16
+#define UART_1_RX_PIN 17
 #define UART_1_BAUD_RATE 115200
 #define UART_1_DATA_BITS 8
 #define UART_1_STOP_BITS 1

@@ -5,7 +5,6 @@
 #include "led.h"
 #include "WS2812.pio.h" // This header file gets produced during compilation from the WS2812.pio file
 #include "drivers/logging/logging.h"
-#include "tasks/tasks.h"
 #include "config.h"
 #include "stdint.h"
 #include <string.h>
@@ -16,7 +15,7 @@ void led_init(){
     // Initialize PIO0 to control the LED chain
     uint32_t pio_program_offset = pio_add_program(LED_PIO, &ws2812_program);
     ws2812_program_init(LED_PIO, 0, pio_program_offset, OUTPUT_LED_PIN, 800000, false);
-    ws2812_program_init(LED_PIO, 0, pio_program_offset, DEBUG_LED_PIN, 800000, false);
+    // ws2812_program_init(LED_PIO, 0, pio_program_offset, DEBUG_LED_PIN, 800000, false);
 }
 
 void set_led_color(uint8_t red, uint8_t green, uint8_t blue) {
