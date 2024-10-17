@@ -106,9 +106,11 @@ void decode_input_commands() {
     }
     else if (strcmp(received_buffer, water_on_command) == 0) {
         set_led_color(0, 0, 255);
+        water_on = true;
     }
     else if (strcmp(received_buffer, water_off_command) == 0) {
         turn_off_led();
+        water_on = false;
     }
     
 }
