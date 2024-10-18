@@ -50,11 +50,12 @@ typedef struct {
 } i2c_config;
 
 typedef struct {
-    float min_val;
-    float max_val;
+    // float min_val;
+    // float max_val;
     char name[20];
-    uint16_t adc_min_map;
-    uint16_t adc_max_map;
+    sensor_type type;
+    // uint16_t adc_min_map;
+    // uint16_t adc_max_map;
 } adc_config;
 
 
