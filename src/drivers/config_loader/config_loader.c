@@ -37,6 +37,7 @@ static rmu_config default_config = {
     },
 };
 
+
 static inline void load_registers_from_16_bit(uint16_t number, uint8_t* addr) {
     addr[0] = number & 0xFF;
     addr[1] = (number >> 8) & 0xFF;
