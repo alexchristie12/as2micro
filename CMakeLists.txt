@@ -35,13 +35,11 @@ if(CrossCompiling)
         src/drivers/logging/logging.c
         src/drivers/config_loader/config_loader.c
         src/drivers/flash/flash.c
-        # src/drivers/WS2812/led.c
+        src/drivers/WS2812/led.c
         src/drivers/io/io.c
         src/drivers/i2c/i2c.c
         src/drivers/adc/adc.c
         src/sensors/CHT8305C/temp_and_humidity.c
-        # src/tasks/tasks.c
-
     )
     target_include_directories(rmu
         PUBLIC 

@@ -7,7 +7,6 @@
 #include "drivers/i2c/i2c.h"
 #include "drivers/adc/adc.h"
 #include "drivers/config_loader/config_loader.h"
-#include "drivers/config_loader/config_loader.h"
 #include "drivers/WS2812/led.h"
 #include "sensors/CHT8305C/temp_and_humidity.h"
 
@@ -152,11 +151,11 @@ void decode_input_commands() {
         formats_data_output();
     }
     else if (strcmp(received_buffer, water_on_command) == 0) {
-        // set_led_color(0, 0, 255);
+        set_led_color(0, 0, 255);
         water_on = true;
     }
     else if (strcmp(received_buffer, water_off_command) == 0) {
-        // turn_off_led();
+        turn_off_led();
         water_on = false;
     }
 }
@@ -165,7 +164,7 @@ int main() {
     io_init();
     parse_i2c_configs_and_initialise(default_config.i2c_configs);
     parse_adc_configs_and_initialise(default_config.adc_configs);
-    // led_init();
+    led_init();
 
     snprintf(poll_command, sizeof(poll_command), "poll=%d", default_config.general_config.hardware_id);
     snprintf(water_on_command, sizeof(water_on_command), "water_on=%d", default_config.general_config.hardware_id);
