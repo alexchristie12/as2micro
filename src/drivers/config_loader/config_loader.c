@@ -2,6 +2,41 @@
 #include <string.h>
 #include <stdint.h>
 
+static rmu_config default_config = {
+    .general_config = {
+        .dob_unix = 0,
+        .hardware_id = 0,
+        .name = "default_config"
+    },
+    .i2c_configs = {
+        {
+            .name = "temperature_01",
+            .type = TEMPERATURE_HUMIDITY_SENSOR,
+        },
+        {
+            .name = "temperature_02"
+        },
+    },
+    .adc_configs = {
+        {
+            .name = "soil_moisture_01",
+            .type = SOIL_MOISTURE_SENSOR,
+        },
+        {
+            .name = "soil_moisture_02",
+            .type = SOIL_MOISTURE_SENSOR,
+        },
+        {
+            .name = "soil_moisture_03",
+            .type = SOIL_MOISTURE_SENSOR,
+        },
+        {
+            .name = "flow_rate_01",
+            .type = FLOW_RATE_SENSOR,
+        },
+    },
+}
+
 static inline void load_registers_from_16_bit(uint16_t number, uint8_t* addr) {
     addr[0] = number & 0xFF;
     addr[1] = (number >> 8) & 0xFF;
@@ -57,13 +92,16 @@ static inline sensor_type match_sensor_type(uint8_t num) {
     sensor_type st;
     switch (num) {
         case 1:
-            st = TEMPERATURE_SENSOR;
+            st = TEMPERATURE_HUMIDITY_SENSOR;
             break;
         case 2:
-            st = HUMIDITY_SENSOR;
+            st = SOIL_MOISTURE_SENSOR;
             break;
         case 3:
-            st = SOIL_MOISTURE_SENSOR;
+            st = FLOW_RATE_SENSOR;
+            break;
+        case 4:
+            st = DISABLED_SENSOR;
             break;
         default:
             st = INVALID_SENSOR;
@@ -80,10 +118,11 @@ static void load_i2c_configs(uint8_t* registers, i2c_config* configs) {
 
 static void load_adc_config(uint8_t* registers, adc_config* config) {
     memcmp(config->name, registers + ADC_NAME_OFFSET, 20);
-    config->max_val     = load_float_from_registers(registers + ADC_MAX_VAL_OFFSET);
-    config->min_val     = load_float_from_registers(registers + ADC_MAX_VAL_OFFSET);
-    config->adc_min_map = load_16_bit_from_registers(registers + ADC_MIN_MAP_OFFSET);
-    config->adc_max_map = load_16_bit_from_registers(registers + ADC_MAX_MAP_OFFSET);
+    config->type = match_sensor_type(*(registers + ADC_MIN_VAL_OFFSET));
+    // config->max_val     = load_float_from_registers(registers + ADC_MAX_VAL_OFFSET);
+    // config->min_val     = load_float_from_registers(registers + ADC_MAX_VAL_OFFSET);
+    // config->adc_min_map = load_16_bit_from_registers(registers + ADC_MIN_MAP_OFFSET);
+    // config->adc_max_map = load_16_bit_from_registers(registers + ADC_MAX_MAP_OFFSET);
 }
 
 static void load_adc_configs(uint8_t* registers, adc_config* configs) {
@@ -127,14 +166,17 @@ static void load_i2c_config_to_registers(uint8_t* registers, i2c_config* config)
 static inline uint8_t match_sensor_type_to_int(sensor_type st) {
     uint8_t corresponding_int;
     switch (st) {
-        case TEMPERATURE_SENSOR:
+        case TEMPERATURE_HUMIDITY_SENSOR:
             corresponding_int = 1;
             break;
-        case HUMIDITY_SENSOR:
+        case SOIL_MOISTURE_SENSOR:
             corresponding_int = 2;
             break;
-        case SOIL_MOISTURE_SENSOR:
+        case FLOW_RATE_SENSOR:
             corresponding_int = 3;
+            break;
+        case DISABLED_SENSOR:
+            corresponding_int = 4;
             break;
         default:
             corresponding_int = 0;
@@ -150,16 +192,21 @@ static void load_i2c_configs_to_registers(uint8_t* registers, i2c_config* config
 }
 
 static void load_adc_config_to_registers(uint8_t* registers, adc_config* config) {
-    // Note that this is the address that the particluar i2c address starts
+    // Note that this is the address that the particular i2c address starts
     uint8_t adc_config_buffer[32];
     memcpy(adc_config_buffer + ADC_NAME_OFFSET, config->name, 20);
-    // The Min and Max floats
-    load_registers_from_float(config->min_val, adc_config_buffer + ADC_MIN_VAL_OFFSET);
-    load_registers_from_float(config->max_val, adc_config_buffer + ADC_MAX_VAL_OFFSET);
 
-    // The Min and Max mapping values
-    load_registers_from_16_bit(config->adc_min_map, adc_config_buffer + ADC_MIN_MAP_OFFSET);
-    load_registers_from_16_bit(config->adc_max_map, adc_config_buffer + ADC_MAX_MAP_OFFSET);
+    // We are now loading in a sensor type instead of the other stuff
+    uint8_t sensor_int = match_sensor_type_to_int(config->type);
+    memcpy(adc_config_buffer + ADC_MIN_VAL_OFFSET, &sensor_int, 1);
+
+    // The Min and Max floats
+    // load_registers_from_float(config->min_val, adc_config_buffer + ADC_MIN_VAL_OFFSET);
+    // load_registers_from_float(config->max_val, adc_config_buffer + ADC_MAX_VAL_OFFSET);
+
+    // // The Min and Max mapping values
+    // load_registers_from_16_bit(config->adc_min_map, adc_config_buffer + ADC_MIN_MAP_OFFSET);
+    // load_registers_from_16_bit(config->adc_max_map, adc_config_buffer + ADC_MAX_MAP_OFFSET);
 }
 
 static void load_adc_configs_to_registers(uint8_t* registers, adc_config* configs) {
