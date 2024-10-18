@@ -6,6 +6,7 @@
 #include "drivers/io/io.h"
 #include "drivers/i2c/i2c.h"
 #include "drivers/adc/adc.h"
+#include "config.h"
 #include "drivers/config_loader/config_loader.h"
 #include "drivers/WS2812/led.h"
 #include "sensors/CHT8305C/temp_and_humidity.h"
