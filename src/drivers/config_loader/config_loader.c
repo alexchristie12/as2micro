@@ -35,7 +35,8 @@ static rmu_config default_config = {
             .type = FLOW_RATE_SENSOR,
         },
     },
-}
+};
+
 
 static inline void load_registers_from_16_bit(uint16_t number, uint8_t* addr) {
     addr[0] = number & 0xFF;

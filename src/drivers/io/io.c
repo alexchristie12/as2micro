@@ -56,17 +56,13 @@ void io_init() {
 }
 
 int io_poll(char *buffer, int buffer_len) {
+    memset((char *)input_buffer, '\000', sizeof(input_buffer));
+    buffer_i    = 0;
+    input_ready = false;
+
     while (!input_ready) {
-        if (get_current_task() != TASK_LED) {
-            // Clean up and exit
-            memset((char *)input_buffer, '\000', sizeof(input_buffer));
-            buffer_i    = 0;
-            input_ready = false;
-            return 0;
-        }
         __asm("wfi");
     }
-
     int msg_len = strlen((char *)input_buffer);
     if (msg_len > buffer_len) {
         // We cannot safely copy the buffer
@@ -74,9 +70,8 @@ int io_poll(char *buffer, int buffer_len) {
     }
     // Copy over the contents into new buffer
     strncpy(buffer, (char *)input_buffer, buffer_len);
-
     memset((char *)input_buffer, '\000', sizeof(input_buffer));
-    buffer_i    = 0;
+    buffer_i = 0;
     input_ready = false;
     return 0;
 }

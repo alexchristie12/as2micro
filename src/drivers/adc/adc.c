@@ -6,7 +6,6 @@ uint16_t adc_raw_input = 0;
 float adc_mapped_output = 0;
 
 void adc_sensor_init(int adc_connection) {
-    adc_init();
     switch (adc_connection)
     {
     case 0:
