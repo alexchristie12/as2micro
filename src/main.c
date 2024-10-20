@@ -7,60 +7,58 @@
 #include "drivers/i2c/i2c.h"
 #include "drivers/adc/adc.h"
 #include "drivers/config_loader/config_loader.h"
+#include "drivers/flash/flash.h"
 #include "drivers/WS2812/led.h"
 #include "sensors/CHT8305C/temp_and_humidity.h"
 
-float temperature[2]; // 2 readings from 2 possible temp sensors
-float humidity[2]; // 2 readings from 2 possible humidity sensors
+float temperature[2];   // 2 readings from 2 possible temp sensors
+float humidity[2];      // 2 readings from 2 possible humidity sensors
 float soil_moisture[4]; // 4 readings from 4 possible soil moisture sensors
-float flow_rate[4]; // 4 readings from 4 possible flow rates sensors
-bool  water_on;        // tell the pi if the water is running (1) or not (0)
+float flow_rate[4];     // 4 readings from 4 possible flow rates sensors
+bool  water_on;         // tell the pi if the water is running (1) or not (0)
 
-char poll_command[50];
-char water_on_command[50];
-char water_off_command[50];
-char received_buffer[200];
+char        poll_command[50];
+char        water_on_command[50];
+char        water_off_command[50];
+char        received_buffer[200];
+const char *config_command = "new_config";
 static char output_buffer[1024];
-int output_offset = 0;
+int         output_offset = 0;
 
 static rmu_config default_config = {
-    .general_config = {
-        .dob_unix = 0,
-        .hardware_id = 1,
-        .name = "default_config"
-    },
-    .i2c_configs = {
+    .special_number = 0,
+    .general_config =
         {
-            .name = "temperature_01",
-            .type = TEMPERATURE_HUMIDITY_SENSOR,
+            .hardware_id = 4,
         },
+    .i2c_configs =
         {
-            .name = "temperature_02",
-            .type = DISABLED_SENSOR,
+            {
+                .type = DISABLED_SENSOR,
+            },
+            {
+                .type = DISABLED_SENSOR,
+            },
         },
-    },
-    .adc_configs = {
+    .adc_configs =
         {
-            .name = "soil_moisture_01",
-            .type = SOIL_MOISTURE_SENSOR,
+            {
+                .type = DISABLED_SENSOR,
+            },
+            {
+                .type = DISABLED_SENSOR,
+            },
+            {
+                .type = DISABLED_SENSOR,
+            },
+            {
+                .type = DISABLED_SENSOR,
+            },
         },
-        {
-            .name = "soil_moisture_02",
-            .type = DISABLED_SENSOR,
-        },
-        {
-            .name = "soil_moisture_03",
-            .type = SOIL_MOISTURE_SENSOR,
-        },
-        {
-            .name = "flow_rate_01",
-            .type = DISABLED_SENSOR,
-        },
-    },
 };
 
-sensor_type i2c_sensor_type[2] = {DISABLED_SENSOR};
-sensor_type adc_sensor_type[4] = {DISABLED_SENSOR};
+sensor_type i2c_sensor_type[2];
+sensor_type adc_sensor_type[4];
 
 /// @param configs - This is a pointer to the array of i2c configs, access it like an array
 void parse_i2c_configs_and_initialise(i2c_config *configs) {
@@ -79,9 +77,7 @@ void parse_adc_configs_and_initialise(adc_config *configs) {
         adc_sensor_type[i] = configs[i].type;
         if (adc_sensor_type[i] == SOIL_MOISTURE_SENSOR) {
             adc_sensor_init(i);
-        }
-        else if (adc_sensor_type[i] == FLOW_RATE_SENSOR)
-        {
+        } else if (adc_sensor_type[i] == FLOW_RATE_SENSOR) {
             adc_sensor_init(i);
         }
     }
@@ -89,30 +85,33 @@ void parse_adc_configs_and_initialise(adc_config *configs) {
 
 void reads_all_sensors() {
     // Loop through i2c sensors and read them
+    // Reset all the measurement arrayzzz to disabled value
     for (size_t i = 0; i < 2; i++) {
-        if (i2c_sensor_type[i] == TEMPERATURE_HUMIDITY_SENSOR) {
+        temperature[i] = 99999;
+        humidity[i]    = 99999;
+        if (default_config.i2c_configs[i].type == TEMPERATURE_HUMIDITY_SENSOR) {
             float *temperature_and_humidity = read_temp_and_humidity(i);
-            temperature[i] = temperature_and_humidity[0];
-            humidity[i] = temperature_and_humidity[1];
+            temperature[i]                  = temperature_and_humidity[0];
+            humidity[i]                     = temperature_and_humidity[1];
         }
-        if (i2c_sensor_type[i] == DISABLED_SENSOR) {
+        if (default_config.i2c_configs[i].type == DISABLED_SENSOR) {
             temperature[i] = 99999;
-            humidity[i] = 99999;
+            humidity[i]    = 99999;
         }
     }
     // loop through adc sensors and read them
     for (size_t i = 0; i < 4; i++) {
+        soil_moisture[i] = 99999;
+        flow_rate[i]     = 99999;
         adc_select_input(i);
-        if (adc_sensor_type[i] == SOIL_MOISTURE_SENSOR) {
-            soil_moisture[i] = read_adc_sensor(0, 545, 0, 900);
-        } else if (adc_sensor_type[i] == FLOW_RATE_SENSOR) {
+        if (default_config.adc_configs[i].type == SOIL_MOISTURE_SENSOR) {
+            soil_moisture[i] = read_adc_sensor(0, 545, 0, 100);
+        } else if (default_config.adc_configs[i].type == FLOW_RATE_SENSOR) {
             flow_rate[i] = read_adc_sensor(0, 450, 0, 20);
-        } else if (adc_sensor_type[i] == DISABLED_SENSOR)
-        {
+        } else if (default_config.adc_configs[i].type == DISABLED_SENSOR) {
             soil_moisture[i] = 99999;
-            flow_rate[i] = 99999;
+            flow_rate[i]     = 99999;
         }
-        
     }
 }
 
@@ -146,22 +145,50 @@ void formats_data_output() {
 void decode_input_commands() {
     memset((char *)received_buffer, '\000', sizeof(received_buffer));
     io_poll(received_buffer, 200);
+    printf("%s\r\n", received_buffer);
     if ((strcmp(received_buffer, poll_command)) == 0) {
         reads_all_sensors();
         formats_data_output();
-    }
-    else if (strcmp(received_buffer, water_on_command) == 0) {
+    } else if (strcmp(received_buffer, water_on_command) == 0) {
         set_led_color(0, 0, 255);
         water_on = true;
-    }
-    else if (strcmp(received_buffer, water_off_command) == 0) {
+    } else if (strcmp(received_buffer, water_off_command) == 0) {
         turn_off_led();
         water_on = false;
+    } else if (strcmp(received_buffer, config_command) == 0) {
+        // Wait for a new config, and then load in and set it
+        printf("we are waiting for a new config\r\n");
+        uint8_t config_buffer[50];
+        io_poll(config_buffer, 50);
+        printf("received new config: %s\r\n", config_buffer);
+        load_config_from_user(config_buffer, &default_config);
+        snprintf(poll_command, sizeof(poll_command), "poll=%d", default_config.general_config.hardware_id);
+        snprintf(water_on_command, sizeof(water_on_command), "water_on=%d", default_config.general_config.hardware_id);
+        snprintf(water_off_command, sizeof(water_off_command), "water_off=%d", default_config.general_config.hardware_id);
+        parse_i2c_configs_and_initialise(default_config.i2c_configs);
+        parse_adc_configs_and_initialise(default_config.adc_configs);
+        printf("we have received a new config and loaded it\r\n");
+
+        // Load this bullshit into memory
+        unload_config(&default_config);
+        // Set the special number
     }
 }
 
 int main() {
     io_init();
+
+    // Here we need to load the Config from flash, if it exists, to reprogram,
+    // the command to receive a new config is `new_config\n`.
+
+    // Check if config exists
+    rmu_config* tmp_config = load_config();
+    if (tmp_config->special_number == 69) {
+        // This is the config we want
+        printf("loaded config from memory\r\n");
+        default_config = *tmp_config;
+    }
+
     parse_i2c_configs_and_initialise(default_config.i2c_configs);
     parse_adc_configs_and_initialise(default_config.adc_configs);
     led_init();

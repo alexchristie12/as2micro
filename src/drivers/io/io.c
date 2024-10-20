@@ -9,7 +9,7 @@
 #include "stdint.h"
 #include "string.h"
 
-volatile char         input_buffer[100];
+volatile char         input_buffer[500];
 volatile unsigned int buffer_i    = 0;
 volatile bool         input_ready = false;
 
@@ -19,6 +19,7 @@ void on_uart_rx(void) {
     while (uart_is_readable(UART_1_ID)) {
         if (uart_is_writable(UART_1_ID)) {
             uint8_t ch = uart_getc(UART_1_ID);
+            printf("%c", ch);
             if ((ch == '\r') || (ch == '\n')) {
                 input_buffer[buffer_i] = 0; // Adds trailing NULL
                 // The control system requires no feedback on input

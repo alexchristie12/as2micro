@@ -1,42 +1,38 @@
 #include "drivers/config_loader/config_loader.h"
 #include <string.h>
 #include <stdint.h>
+#include <stdio.h>
 
 static rmu_config default_config = {
-    .general_config = {
-        .dob_unix = 0,
-        .hardware_id = 0,
-        .name = "default_config"
-    },
-    .i2c_configs = {
+    .general_config =
         {
-            .name = "temperature_01",
-            .type = TEMPERATURE_HUMIDITY_SENSOR,
+            .hardware_id = 0,
         },
+    .i2c_configs =
         {
-            .name = "temperature_02"
+            {
+                .type = TEMPERATURE_HUMIDITY_SENSOR,
+            },
+            {
+                .type = TEMPERATURE_HUMIDITY_SENSOR,
+            },
         },
-    },
-    .adc_configs = {
+    .adc_configs =
         {
-            .name = "soil_moisture_01",
-            .type = SOIL_MOISTURE_SENSOR,
+            {
+                .type = SOIL_MOISTURE_SENSOR,
+            },
+            {
+                .type = SOIL_MOISTURE_SENSOR,
+            },
+            {
+                .type = SOIL_MOISTURE_SENSOR,
+            },
+            {
+                .type = FLOW_RATE_SENSOR,
+            },
         },
-        {
-            .name = "soil_moisture_02",
-            .type = SOIL_MOISTURE_SENSOR,
-        },
-        {
-            .name = "soil_moisture_03",
-            .type = SOIL_MOISTURE_SENSOR,
-        },
-        {
-            .name = "flow_rate_01",
-            .type = FLOW_RATE_SENSOR,
-        },
-    },
 };
-
 
 static inline void load_registers_from_16_bit(uint16_t number, uint8_t* addr) {
     addr[0] = number & 0xFF;
@@ -78,17 +74,6 @@ static inline float load_float_from_registers(uint8_t* registers) {
     return float_union.f;
 }
 
-static void load_general_config(uint8_t* registers, general_config* config) {
-    config->hardware_id = load_32_bit_from_registers(registers);
-    config->dob_unix    = load_32_bit_from_registers(registers + GENERAL_CONFIG_DOB_OFFSET);
-    memcpy(config->name, registers + GENERAL_NAME_OFFSET, 20);
-}
-
-static void load_i2c_config(uint8_t* registers, i2c_config* config) {
-    memcmp(config->name, registers + I2C_NAME_OFFSET, 20);
-    config->type = match_sensor_type(*(registers + I2C_TYPE_OFFSET));
-}
-
 static inline sensor_type match_sensor_type(uint8_t num) {
     sensor_type st;
     switch (num) {
@@ -111,57 +96,15 @@ static inline sensor_type match_sensor_type(uint8_t num) {
     return st;
 }
 
-static void load_i2c_configs(uint8_t* registers, i2c_config* configs) {
-    // Load each I2C config
-    load_i2c_config(registers + I2C_1_CONFIG, &configs[0]);
-    load_i2c_config(registers + I2C_2_CONFIG, &configs[1]);
-}
-
-static void load_adc_config(uint8_t* registers, adc_config* config) {
-    memcmp(config->name, registers + ADC_NAME_OFFSET, 20);
-    config->type = match_sensor_type(*(registers + ADC_MIN_VAL_OFFSET));
-    // config->max_val     = load_float_from_registers(registers + ADC_MAX_VAL_OFFSET);
-    // config->min_val     = load_float_from_registers(registers + ADC_MAX_VAL_OFFSET);
-    // config->adc_min_map = load_16_bit_from_registers(registers + ADC_MIN_MAP_OFFSET);
-    // config->adc_max_map = load_16_bit_from_registers(registers + ADC_MAX_MAP_OFFSET);
-}
-
-static void load_adc_configs(uint8_t* registers, adc_config* configs) {
-    // Load each ADC configs
-    load_adc_config(registers + ADC_1_CONFIG, &configs[0]);
-    load_adc_config(registers + ADC_2_CONFIG, &configs[1]);
-    load_adc_config(registers + ADC_3_CONFIG, &configs[2]);
-    load_adc_config(registers + ADC_4_CONFIG, &configs[3]);
-}
-
 void load_config_from_memory(uint8_t* registers, rmu_config* config) {
-    // Load the general config
-    load_general_config(registers, &(config->general_config));
-    // Load the I2C configs
-    load_i2c_configs(registers, config->i2c_configs);
-    // Load the ADC configs
-    load_adc_config(registers, config->adc_configs);
-}
-
-static void load_general_config_to_registers(uint8_t* registers, general_config* config) {
-    // Essentially the same as before, but backwards
-    uint8_t general_config_buffer[28];
-    load_registers_from_32_bit(config->hardware_id, general_config_buffer + GENERAL_HARDWARE_ID_OFFSET);
-    memcpy(general_config_buffer + GENERAL_NAME_OFFSET, config->name, 20);
-    load_registers_from_32_bit(config->dob_unix, general_config_buffer + GENERAL_CONFIG_DOB_OFFSET);
-
-    // Now load all this into the config buffer
-    memcpy(registers + GENERAL_CONFIG_OFFSET, general_config_buffer, 28);
-}
-
-static void load_i2c_config_to_registers(uint8_t* registers, i2c_config* config) {
-    // Remember that this starts at the base i2c address for the particular one!
-    uint8_t i2c_config_buffer[21];
-    uint8_t sensor_int = match_sensor_type_to_int(config->type);
-    memcpy(i2c_config_buffer + I2C_NAME_OFFSET, config->name, 20);
-    memcpy(i2c_config_buffer + I2C_TYPE_OFFSET, &sensor_int, 1);
-    // Now copy into the address
-    memcpy(registers, i2c_config_buffer, 21);
+    // This is much better
+    config->general_config.hardware_id = registers[0];
+    config->i2c_configs[0].type        = registers[1];
+    config->i2c_configs[1].type        = registers[2];
+    config->adc_configs[0].type        = registers[3];
+    config->adc_configs[1].type        = registers[4];
+    config->adc_configs[2].type        = registers[5];
+    config->adc_configs[3].type        = registers[6];
 }
 
 static inline uint8_t match_sensor_type_to_int(sensor_type st) {
@@ -186,42 +129,36 @@ static inline uint8_t match_sensor_type_to_int(sensor_type st) {
     return corresponding_int;
 }
 
-static void load_i2c_configs_to_registers(uint8_t* registers, i2c_config* configs) {
-    // Load each config
-    load_i2c_config_to_registers(registers + I2C_1_CONFIG, &(configs[0]));
-    load_i2c_config_to_registers(registers + I2C_2_CONFIG, &(configs[1]));
-}
-
-static void load_adc_config_to_registers(uint8_t* registers, adc_config* config) {
-    // Note that this is the address that the particular i2c address starts
-    uint8_t adc_config_buffer[32];
-    memcpy(adc_config_buffer + ADC_NAME_OFFSET, config->name, 20);
-
-    // We are now loading in a sensor type instead of the other stuff
-    uint8_t sensor_int = match_sensor_type_to_int(config->type);
-    memcpy(adc_config_buffer + ADC_MIN_VAL_OFFSET, &sensor_int, 1);
-
-    // The Min and Max floats
-    // load_registers_from_float(config->min_val, adc_config_buffer + ADC_MIN_VAL_OFFSET);
-    // load_registers_from_float(config->max_val, adc_config_buffer + ADC_MAX_VAL_OFFSET);
-
-    // // The Min and Max mapping values
-    // load_registers_from_16_bit(config->adc_min_map, adc_config_buffer + ADC_MIN_MAP_OFFSET);
-    // load_registers_from_16_bit(config->adc_max_map, adc_config_buffer + ADC_MAX_MAP_OFFSET);
-}
-
-static void load_adc_configs_to_registers(uint8_t* registers, adc_config* configs) {
-    // Note that this is the BASE address
-    load_adc_config_to_registers(registers + ADC_1_CONFIG, &(configs[0]));
-    load_adc_config_to_registers(registers + ADC_2_CONFIG, &(configs[1]));
-    load_adc_config_to_registers(registers + ADC_3_CONFIG, &(configs[3]));
-    load_adc_config_to_registers(registers + ADC_4_CONFIG, &(configs[3]));
-}
-
 void load_config_to_registers(uint8_t* registers, rmu_config* config) {
-    // Remember that I only give it all the base addresses
-    // Remember that this will be put in in the right spot
-    load_general_config_to_registers(registers, &(config->general_config));
-    load_i2c_configs_to_registers(registers, config->i2c_configs);
-    load_adc_configs_to_registers(registers, config->adc_configs);
+    uint8_t config_memory[7];
+    config_memory[0] = config->general_config.hardware_id;
+    config_memory[1] = config->i2c_configs[0].type;
+    config_memory[2] = config->i2c_configs[1].type;
+    config_memory[3] = config->adc_configs[0].type;
+    config_memory[4] = config->adc_configs[1].type;
+    config_memory[5] = config->adc_configs[2].type;
+    config_memory[6] = config->adc_configs[3].type;
+}
+
+void load_config_from_user(char* buffer, rmu_config* config) {
+    uint8_t hardware_id;
+    uint8_t i2c_type_0;
+    uint8_t i2c_type_1;
+    uint8_t adc_type_0;
+    uint8_t adc_type_1;
+    uint8_t adc_type_2;
+    uint8_t adc_type_3;
+    printf("%s\n\r", buffer);
+    int res = sscanf((const char*)buffer, "%hhu,%hhu,%hhu,%hhu,%hhu,%hhu,%hhu", &hardware_id, &i2c_type_0, &i2c_type_1, &adc_type_0, &adc_type_1, &adc_type_2, &adc_type_3);
+    printf("We managed to get %d matches\r\n", res);
+    if (res != 7) {
+        return;
+    }
+    config->general_config.hardware_id = hardware_id;
+    config->i2c_configs[0].type        = match_sensor_type(i2c_type_0);
+    config->i2c_configs[1].type        = match_sensor_type(i2c_type_1);
+    config->adc_configs[0].type        = match_sensor_type(adc_type_0);
+    config->adc_configs[1].type        = match_sensor_type(adc_type_1);
+    config->adc_configs[2].type        = match_sensor_type(adc_type_2);
+    config->adc_configs[3].type        = match_sensor_type(adc_type_3);
 }

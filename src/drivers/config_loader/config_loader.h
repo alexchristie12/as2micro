@@ -8,6 +8,19 @@ flash memory
 #pragma once
 #include <stdint.h>
 
+/*
+NO MORE OFFSETS THIS IS THE GROUND TRUTH
+WE HAVE A SEVEN BYTE BUFFER
+
+0 - Hardware ID
+1 - I2C Sensor 01 Type
+2 - I2C Sensor 02 Type
+3 - ADC Sensor 01 Type
+4 - ADC Sensor 02 Type
+5 - ADC Sensor 03 Type
+6 - ADC Sensor 04 Type
+*/
+
 #define GENERAL_HARDWARE_ID_OFFSET 0x00
 #define GENERAL_NAME_OFFSET 0x04
 #define GENERAL_CONFIG_DOB_OFFSET 0x18
@@ -16,10 +29,12 @@ flash memory
 #define I2C_TYPE_OFFSET 0x14
 
 #define ADC_NAME_OFFSET 0x00
-#define ADC_MIN_VAL_OFFSET 0x14
-#define ADC_MAX_VAL_OFFSET 0x18
-#define ADC_MIN_MAP_OFFSET 0x1C
-#define ADC_MAX_MAP_OFFSET 0x1E
+#define ADC_TYPE_OFFSET 0x14
+
+// These are redundant, but I do not want to refactor everything
+// #define ADC_MAX_VAL_OFFSET 0x18
+// #define ADC_MIN_MAP_OFFSET 0x1C
+// #define ADC_MAX_MAP_OFFSET 0x1E
 
 #define GENERAL_CONFIG_OFFSET 0x00
 #define I2C_1_CONFIG 0x1C
@@ -39,27 +54,20 @@ typedef enum {
 } sensor_type;
 
 typedef struct {
-   uint32_t hardware_id;
-   uint32_t dob_unix;  
-   char name[20];
+   uint8_t hardware_id;
 } general_config;
 
 typedef struct {
-    char name[20];
     sensor_type type; 
 } i2c_config;
 
 typedef struct {
-    // float min_val;
-    // float max_val;
-    char name[20];
     sensor_type type;
-    // uint16_t adc_min_map;
-    // uint16_t adc_max_map;
 } adc_config;
 
 
 typedef struct {
+    uint8_t special_number;
     general_config general_config;
     i2c_config i2c_configs[2];
     adc_config adc_configs[4];
@@ -169,3 +177,6 @@ void load_config_to_registers(uint8_t* registers, rmu_config* config);
 /// @param st The sensor type
 /// @return The corresponding uint8_t value
 static inline uint8_t match_sensor_type_to_int(sensor_type st);
+
+
+void load_config_from_user(char* buffer, rmu_config* config);
