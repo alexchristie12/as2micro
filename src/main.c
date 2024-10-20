@@ -6,6 +6,7 @@
 #include "drivers/io/io.h"
 #include "drivers/i2c/i2c.h"
 #include "drivers/adc/adc.h"
+#include "config.h"
 #include "drivers/config_loader/config_loader.h"
 #include "drivers/WS2812/led.h"
 #include "sensors/CHT8305C/temp_and_humidity.h"
@@ -19,6 +20,7 @@ bool  water_on;        // tell the pi if the water is running (1) or not (0)
 char poll_command[50];
 char water_on_command[50];
 char water_off_command[50];
+
 char received_buffer[200];
 static char output_buffer[1024];
 int output_offset = 0;

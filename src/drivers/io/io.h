@@ -7,7 +7,6 @@ on the RP2040
 
 #pragma once
 #include <stdbool.h>
-#include "tasks/tasks.h"
 
 /// @brief Callback to handle the serial connection
 /// @param _ Should be used as a function pointer 
