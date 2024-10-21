@@ -19,12 +19,12 @@ void on_uart_rx(void) {
     while (uart_is_readable(UART_1_ID)) {
         if (uart_is_writable(UART_1_ID)) {
             uint8_t ch = uart_getc(UART_1_ID);
-            printf("%c", ch);
             // Check for if we are trying to enter config mode
             if (ch == '$') {
                 // We want to ignore these characters
                 return;
             }
+            printf("%c", ch);
             if ((ch == '\r') || (ch == '\n')) {
                 input_buffer[buffer_i] = 0; // Adds trailing NULL
                 // The control system requires no feedback on input
