@@ -9,23 +9,36 @@
 #include "stdint.h"
 #include "string.h"
 
-volatile char         input_buffer[100];
+volatile char         input_buffer[500];
 volatile unsigned int buffer_i    = 0;
 volatile bool         input_ready = false;
+
+#define HEADLESS
 
 void on_uart_rx(void) {
     while (uart_is_readable(UART_1_ID)) {
         if (uart_is_writable(UART_1_ID)) {
             uint8_t ch = uart_getc(UART_1_ID);
+            // Check for if we are trying to enter config mode
+            if (ch == '$') {
+                // We want to ignore these characters
+                return;
+            }
+            printf("%c", ch);
             if ((ch == '\r') || (ch == '\n')) {
                 input_buffer[buffer_i] = 0; // Adds trailing NULL
+                // The control system requires no feedback on input
+#ifndef HEADLESS
                 uart_putc(UART_1_ID, '\r');
                 uart_putc(UART_1_ID, '\n');
+#endif
                 input_ready = true;
             } else {
                 input_buffer[buffer_i] = ch;
                 buffer_i++;
+#ifndef HEADLESS
                 uart_putc(UART_1_ID, ch);
+#endif
                 if (ch == 0x7f) {
                     buffer_i               = buffer_i - 2;
                     input_buffer[buffer_i] = '\000';
@@ -71,7 +84,7 @@ int io_poll(char *buffer, int buffer_len) {
     // Copy over the contents into new buffer
     strncpy(buffer, (char *)input_buffer, buffer_len);
     memset((char *)input_buffer, '\000', sizeof(input_buffer));
-    buffer_i = 0;
+    buffer_i    = 0;
     input_ready = false;
     return 0;
 }

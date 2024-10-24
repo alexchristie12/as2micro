@@ -28,7 +28,7 @@ void adc_sensor_init(int adc_connection) {
 }
 
 float read_adc_sensor(int adc_min, int adc_max, int adc_map_min, int adc_map_max) {
-    float gradient = (adc_map_max - adc_map_min) / (adc_max - adc_min);
+    float gradient = (float)(adc_map_max - adc_map_min) / (float)(adc_max - adc_min);
 
     adc_raw_input = adc_read();
 
