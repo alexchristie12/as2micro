@@ -29,7 +29,7 @@ static rmu_config default_config = {
     .special_number = 0,
     .general_config =
         {
-            .hardware_id = 4,
+            .hardware_id = 0,
         },
     .i2c_configs =
         {
