@@ -6,6 +6,7 @@
 #include "drivers/io/io.h"
 #include "drivers/i2c/i2c.h"
 #include "drivers/adc/adc.h"
+#include "config.h"
 #include "drivers/config_loader/config_loader.h"
 #include "drivers/flash/flash.h"
 #include "drivers/WS2812/led.h"
@@ -17,11 +18,13 @@ float soil_moisture[4]; // 4 readings from 4 possible soil moisture sensors
 float flow_rate[4];     // 4 readings from 4 possible flow rates sensors
 bool  water_on;         // tell the pi if the water is running (1) or not (0)
 
+
 char        poll_command[50];
 char        water_on_command[50];
 char        water_off_command[50];
 char        received_buffer[200];
 const char *config_command = "new_config";
+
 static char output_buffer[1024];
 int         output_offset = 0;
 

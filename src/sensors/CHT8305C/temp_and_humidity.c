@@ -21,7 +21,7 @@ void temp_and_humidity_init(int i2c_connection) {
 
 // void read_temp_and_humidity() {
 float* read_temp_and_humidity(int i2c_connection) {
-    bytes_read = i2c_read_multiple_registers(i2c_connection, temp_register, &data_out, 4, TEMP_AND_HUMIDITY_SLAVE_ADDRESS);
+    bytes_read = i2c_read_multiple_registers(i2c_connection, temp_register, data_out, 4, TEMP_AND_HUMIDITY_SLAVE_ADDRESS);
     temperature_data = ((data_out[0] << 8) | data_out[1]);
     humidity_data = ((data_out[2] << 8) | data_out[3]);
 
