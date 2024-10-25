@@ -28,6 +28,7 @@ const char *config_command = "new_config";
 static char output_buffer[1024];
 int         output_offset = 0;
 
+// Default config
 static rmu_config default_config = {
     .special_number = 0,
     .general_config =
@@ -65,6 +66,7 @@ sensor_type adc_sensor_type[4];
 
 /// @param configs - This is a pointer to the array of i2c configs, access it like an array
 void parse_i2c_configs_and_initialise(i2c_config *configs) {
+    // Read I2C config and initialise sensors accordingly
     for (size_t i = 0; i < 2; i++) {
         i2c_sensor_type[i] = configs[i].type;
         if (i2c_sensor_type[i] == TEMPERATURE_HUMIDITY_SENSOR) {
@@ -75,6 +77,7 @@ void parse_i2c_configs_and_initialise(i2c_config *configs) {
 }
 
 void parse_adc_configs_and_initialise(adc_config *configs) {
+    // Read ADC config and initialise sensors accordingly
     adc_init();
     for (size_t i = 0; i < 4; i++) {
         adc_sensor_type[i] = configs[i].type;
@@ -87,9 +90,9 @@ void parse_adc_configs_and_initialise(adc_config *configs) {
 }
 
 void reads_all_sensors() {
-    // Loop through i2c sensors and read them
-    // Reset all the measurement arrayzzz to disabled value
+    // Loop through the I2C sensors and read them
     for (size_t i = 0; i < 2; i++) {
+        // Reset all the measurement arrays to disabled value
         temperature[i] = 99999;
         humidity[i]    = 99999;
         if (default_config.i2c_configs[i].type == TEMPERATURE_HUMIDITY_SENSOR) {
@@ -102,8 +105,9 @@ void reads_all_sensors() {
             humidity[i]    = 99999;
         }
     }
-    // loop through adc sensors and read them
+    // Loop through the ADC sensors and read them
     for (size_t i = 0; i < 4; i++) {
+        // Reset all the measurement arrays to disabled value
         soil_moisture[i] = 99999;
         flow_rate[i]     = 99999;
         adc_select_input(i);
@@ -119,9 +123,10 @@ void reads_all_sensors() {
 }
 
 void formats_data_output() {
-    // Rotate through for each zone:
+    // Clear the buffer
     memset((char *)output_buffer, '\000', sizeof(output_buffer));
     output_offset = 0;
+    // Hardware ID
     output_offset += snprintf(output_buffer + output_offset, sizeof(output_buffer) - output_offset, "hardware_id=%i,", default_config.general_config.hardware_id);
     // Temperature Data:
     for (int i = 0; i < 2; i++) {
@@ -146,9 +151,9 @@ void formats_data_output() {
 }
 
 void decode_input_commands() {
+    // Clear the buffer
     memset((char *)received_buffer, '\000', sizeof(received_buffer));
     io_poll(received_buffer, 200);
-    printf("%s\r\n", received_buffer);
     if ((strcmp(received_buffer, poll_command)) == 0) {
         reads_all_sensors();
         formats_data_output();
@@ -163,18 +168,19 @@ void decode_input_commands() {
         printf("we are waiting for a new config\r\n");
         uint8_t config_buffer[50];
         io_poll(config_buffer, 50);
-        printf("received new config: %s\r\n", config_buffer);
         load_config_from_user(config_buffer, &default_config);
+
+        // Reinitialise the commands for the new hardware id
         snprintf(poll_command, sizeof(poll_command), "poll=%d", default_config.general_config.hardware_id);
         snprintf(water_on_command, sizeof(water_on_command), "water_on=%d", default_config.general_config.hardware_id);
         snprintf(water_off_command, sizeof(water_off_command), "water_off=%d", default_config.general_config.hardware_id);
+        
+        // Reinitialise the connected sensors based on the new config
         parse_i2c_configs_and_initialise(default_config.i2c_configs);
         parse_adc_configs_and_initialise(default_config.adc_configs);
-        printf("we have received a new config and loaded it\r\n");
 
-        // Load this bullshit into memory
+        // Load new config into memory
         unload_config(&default_config);
-        // Set the special number
     }
 }
 
@@ -188,7 +194,6 @@ int main() {
     rmu_config* tmp_config = load_config();
     if (tmp_config->special_number == 69) {
         // This is the config we want
-        printf("loaded config from memory\r\n");
         default_config = *tmp_config;
     }
 

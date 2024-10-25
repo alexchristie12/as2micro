@@ -50,7 +50,9 @@ void on_uart_rx(void) {
 
 void io_init() {
     stdio_init_all();
+    // Change the debugging uart pins
     stdio_uart_init_full(uart0, 115200, 16, 17);
+    // Clear the input buffer
     memset((char *)input_buffer, '\000', sizeof(input_buffer));
 
     // Initialise the UART
@@ -69,11 +71,13 @@ void io_init() {
 }
 
 int io_poll(char *buffer, int buffer_len) {
+    // Clear the input buffer
     memset((char *)input_buffer, '\000', sizeof(input_buffer));
     buffer_i    = 0;
     input_ready = false;
 
     while (!input_ready) {
+        // Enter low power mode until a command is received
         __asm("wfi");
     }
     int msg_len = strlen((char *)input_buffer);
