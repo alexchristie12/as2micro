@@ -64,6 +64,7 @@ static rmu_config default_config = {
 sensor_type i2c_sensor_type[2];
 sensor_type adc_sensor_type[4];
 
+/// @brief Parse the I2C configs and initialise
 /// @param configs - This is a pointer to the array of i2c configs, access it like an array
 void parse_i2c_configs_and_initialise(i2c_config *configs) {
     // Read I2C config and initialise sensors accordingly
@@ -76,6 +77,8 @@ void parse_i2c_configs_and_initialise(i2c_config *configs) {
     }
 }
 
+/// @brief Parse the ADC configs and initialise
+/// @param configs ADC Configs to parse
 void parse_adc_configs_and_initialise(adc_config *configs) {
     // Read ADC config and initialise sensors accordingly
     adc_init();
@@ -89,7 +92,8 @@ void parse_adc_configs_and_initialise(adc_config *configs) {
     }
 }
 
-void reads_all_sensors() {
+/// @brief Reads all of the sensors
+void read_all_sensors() {
     // Loop through the I2C sensors and read them
     for (size_t i = 0; i < 2; i++) {
         // Reset all the measurement arrays to disabled value
@@ -150,12 +154,12 @@ void formats_data_output() {
     uart_puts(UART_1_ID, output_buffer);
 }
 
-void decode_input_commands() {
+void process_input_commands() {
     // Clear the buffer
     memset((char *)received_buffer, '\000', sizeof(received_buffer));
     io_poll(received_buffer, 200);
     if ((strcmp(received_buffer, poll_command)) == 0) {
-        reads_all_sensors();
+        read_all_sensors();
         formats_data_output();
     } else if (strcmp(received_buffer, water_on_command) == 0) {
         set_led_color(0, 0, 255);
@@ -206,7 +210,7 @@ int main() {
     snprintf(water_off_command, sizeof(water_off_command), "water_off=%d", default_config.general_config.hardware_id);
 
     for (;;) {
-        decode_input_commands();
+        process_input_commands();
     }
     return 0;
 }
