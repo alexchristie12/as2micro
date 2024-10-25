@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
@@ -11,16 +13,20 @@
 #include "drivers/flash/flash.h"
 #include "drivers/WS2812/led.h"
 #include "sensors/CHT8305C/temp_and_humidity.h"
-#include "tasks/tasks.h"
 
 
-int main() {
-    io_init();
-    system_setup();
+void parse_i2c_configs_and_initialise(i2c_config *configs);
 
 
-    for (;;) {
-        process_input_commands();
-    }
-    return 0;
-}
+void parse_adc_configs_and_initialise(adc_config *configs);
+
+
+void read_all_sensors();
+
+
+void formats_data_output();
+
+
+void process_input_commands();
+
+void system_setup();
